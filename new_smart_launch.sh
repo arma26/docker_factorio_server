@@ -10,120 +10,80 @@ echo '  \  \::/     \  \::/       \  \:\  /:/  \__\/  \:\   \  \:\  /:/   \  \::
 echo '   \  \:\      \  \:\        \  \:\/:/        \  \:\   \  \:\/:/     \  \:\          /__/:/    \  \:\/:/  '
 echo '    \  \:\      \  \:\        \  \::/          \__\/    \  \::/       \  \:\         \__\/      \  \::/   '
 echo '     \__\/       \__\/         \__\/                     \__\/         \__\/                     \__\/    '
-# Checking if server is ready 
-if [ $FACTORIO_WAITING == true ] 
-then 
-  until [ -f /opt/factorio/saves/ready ] 
-  do 
-    echo "# Waiting for backup daemon to be ready" 
-    sleep 1 
-  done 
-fi
-# Setting initial command
-factorio_command="/opt/factorio/bin/x64/factorio"
-# Include server-settings.json if one or more variables are populated
-# removed FACTORIO_USER_TOKEN condition cause of bug (https://github.com/zopanix/docker_factorio_server/issues/23)
-if [ "$FACTORIO_SERVER_NAME" ] \
-|| [ "$FACTORIO_SERVER_DESCRIPTION" ] \
-|| [ "$FACTORIO_SERVER_MAX_PLAYERS" ] \
-|| [ "$FACTORIO_SERVER_VISIBILITY" ] \
-|| [ "$FACTORIO_USER_USERNAME" ] \
-|| [ "$FACTORIO_USER_PASSWORD" ] \
-|| [ "$FACTORIO_SERVER_GAME_PASSWORD" ] \
-|| [ "$FACTORIO_SERVER_VERIFY_IDENTITY" ]
+
+if [ -z $FACTORIO_SERVER_NAME ]
 then
-  factorio_command="$factorio_command --server-settings /opt/factorio/server-settings.json"
-  # Set Server Name default value if not set by user param
-  if [ -z $FACTORIO_SERVER_NAME ]
-  then
-    FACTORIO_SERVER_NAME="Factorio Server $VERSION"
-  fi
-  # Set Visibility default value if not set by user param
-  if [ -z $FACTORIO_SERVER_VISIBILITY ]
-  then
-    FACTORIO_SERVER_VISIBILITY="hidden"
-  fi
-  # Set Verify User Identity default value if not set by user param
-  if [ -z $FACTORIO_SERVER_VERIFY_IDENTITY ]
-  then
-    FACTORIO_SERVER_VERIFY_IDENTITY="false"
-  fi
-  # Check for supplied credentials if visibility is set to public
-  if [ "$FACTORIO_SERVER_VISIBILITY" == "public" ]
-  then
-    if [ -z $FACTORIO_USER_USERNAME ]
-    then
-      echo "###"
-      echo "# Server Visibility is set to public but no factorio.com Username is supplied!"
-      echo "# Append: --env FACTORIO_USER_USERNAME=[USERNAME]"
-      echo "# Defaulting back to Server Visibility: hidden"
-      echo "###"
-      FACTORIO_SERVER_VISIBILITY="hidden"
-    fi
-    if [ "$FACTORIO_USER_USERNAME" ]
-    then
-#      if [ -z $FACTORIO_USER_PASSWORD ] && [ -z $FACTORIO_USER_TOKEN ]
-      if [ -z $FACTORIO_USER_PASSWORD ]
-      then
-      echo "###"
-#      echo "# Server Visibility is set to public but neither factorio.com Password or Token is supplied!"
-      echo "# Server Visibility is set to public but neither factorio.com Password is supplied!"
-      echo "# Append: --env FACTORIO_USER_PASSWORD=[PASSWORD]"
-#      echo "# or --env FACTORIO_USER_TOKEN=[TOKEN]"
-      echo "# Defaulting back to Server Visibility: hidden"
-      echo "###"
-      FACTORIO_SERVER_VISIBILITY="hidden"
-      fi
-    fi
-  fi
+  FACTORIO_SERVER_NAME="Factorio Server $VERSION"
+fi
+if [ -z $FACTORIO_SERVER_DESCRIPTION ]
+then
+  FACTORIO_SERVER_DESCRIPTION="Factorio Server $VERSION"
 fi
 # Populate server-settings.json
-SERVER_SETTINGS=/opt/factorio/server-settings.json
-cat << EOF > $SERVER_SETTINGS
+cat > /opt/factorio/server-settings.json << EOF
 {
-"name": "$FACTORIO_SERVER_NAME",
-"description": "$FACTORIO_SERVER_DESCRIPTION",
-"max_players": "$FACTORIO_SERVER_MAX_PLAYERS",
+  "name": "$FACTORIO_SERVER_NAME",
+  "description": "$FACTORIO_SERVER_DESCRIPTION",
+  "tags": ["game", "tags"],
 
-"_comment_visibility": ["public: Game will be published on the official Factorio matching server",
-                        "lan: Game will be broadcast on LAN",
-                        "hidden: Game will not be published anywhere"],
-"visibility": "$FACTORIO_SERVER_VISIBILITY",
+  "_comment_max_players": "Maximum number of players allowed, admins can join even a full server. 0 means unlimited.",
+  "max_players": "$FACTORIO_MAX_PLAYERS",
 
-"_comment_credentials": "Your factorio.com login credentials. Required for games with visibility public",
-"username": "$FACTORIO_USER_USERNAME",
-"password": "$FACTORIO_USER_PASSWORD",
+  "_comment_visibility": ["public: Game will be published on the official Factorio matching server",
+                          "lan: Game will be broadcast on LAN"],
+  "visibility":
+  {
+    "public": $FACTORIO_VISIBILITY_PUBLIC,
+    "lan": $FACTORIO_VISIBILITY_LAN
+  },
 
-"_comment_token": "Authentication token. May be used instead of 'password' above.",
-"token": "$FACTORIO_USER_TOKEN",
+  "_comment_credentials": "Your factorio.com login credentials. Required for games with visibility public",
+  "username": "$FACTORIO_USER_USERNAME",
+  "password": "$FACTORIO_USER_PASSWORD",
 
-"game_password": "$FACTORIO_SERVER_GAME_PASSWORD",
+  "_comment_token": "Authentication token. May be used instead of 'password' above.",
+  "token": "$FACTORIO_USER_TOKEN",
 
-"_comment_verify_user_identity": "When set to true, the server will only allow clients that have a valid Factorio.com account",
-"verify_user_identity": $FACTORIO_SERVER_VERIFY_IDENTITY
+  "game_password": "$FACTORIO_GAME_PASSWORD",
+
+  "_comment_require_user_verification": "When set to true, the server will only allow clients that have a valid Factorio.com account",
+  "require_user_verification": $FACTORIO_REQUIRE_USER_VERIFICATION,
+
+  "_comment_max_upload_in_kilobytes_per_second" : "optional, default value is 0. 0 means unlimited.",
+  "max_upload_in_kilobytes_per_second": $FACTORIO_MAX_UPLOADS_KBPS,
+
+  "_comment_minimum_latency_in_ticks": "optional one tick is 16ms in default speed, default value is 0. 0 means no minimum.",
+  "minimum_latency_in_ticks": $FACTORIO_MINIMUM_LATENCY_TICKS,
+
+  "_comment_ignore_player_limit_for_returning_players": "Players that played on this map already can join even when the max player limit was reached.",
+  "ignore_player_limit_for_returning_players": $FACTORIO_RETURNING_PLAYER_LIMIT,
+
+  "_comment_allow_commands": "possible values are, true, false and admins-only",
+  "allow_commands": "$FACTORIO_ALLOW_COMMANDS",
+
+  "_comment_autosave_interval": "Autosave interval in minutes",
+  "autosave_interval": $FACTORIO_AUTOSAVE_INTERVAL,
+
+  "_comment_autosave_slots": "server autosave slots, it is cycled through when the server autosaves.",
+  "autosave_slots": $FACTORIO_AUTOSAVE_SLOTS,
+
+  "_comment_afk_autokick_interval": "How many minutes until someone is kicked when doing nothing, 0 for never.",
+  "afk_autokick_interval": $FACTORIO_AFK_KICK_INTERVAL,
+
+  "_comment_auto_pause": "Whether should the server be paused when no players are present.",
+  "auto_pause": $FACTORIO_AUTO_PAUSE,
+
+  "only_admins_can_pause_the_game": $FACTORIO_ADMIN_ONLY_PAUSE,
+
+  "_comment_autosave_only_on_server": "Whether autosaves should be saved only on server or also on all connected clients. Default is true.",
+  "autosave_only_on_server": $FACTORIO_AUTOSAVE_ONLY_ON_SERVER,
+
+  "_comment_admins": "List of case insensitive usernames, that will be promoted immediately",
+  "admins": []
 }
 EOF
-# Setting heavy mode option
-if [ "$FACTORIO_MODE" == "heavy" ]
-then
-factorio_command="$factorio_command --heavy"
-fi
-# Setting complete mode option
-if [ "$FACTORIO_MODE" == "complete" ]
-then
-factorio_command="$factorio_command --complete"
-fi
-# Setting allow-commands option
-factorio_command="$factorio_command --allow-commands $FACTORIO_ALLOW_COMMANDS"
-# Setting auto-pause option
-if [ "$FACTORIO_NO_AUTO_PAUSE" == true ] 
-then
-factorio_command="$factorio_command --no-auto-pause"
-fi
-# Setting autosave-interval option
-factorio_command="$factorio_command --autosave-interval $FACTORIO_AUTOSAVE_INTERVAL"
-# Setting autosave-slots option
-factorio_command="$factorio_command --autosave-slots $FACTORIO_AUTOSAVE_SLOTS"
+
+factorio_command="/opt/factorio/bin/x64/factorio --server-settings /opt/factorio/server-settings.json"
 # Setting rcon-port option
 factorio_command="$factorio_command --rcon-port 27015"
 # Setting rcon password option
@@ -139,23 +99,23 @@ factorio_command="$factorio_command --rcon-password $FACTORIO_RCON_PASSWORD"
 # removed FACTORIO_USER_TOKEN condition cause of bug (https://github.com/zopanix/docker_factorio_server/issues/23)
 if [ "$FACTORIO_SERVER_NAME" ] \
 || [ "$FACTORIO_SERVER_DESCRIPTION" ] \
-|| [ "$FACTORIO_SERVER_MAX_PLAYERS" ] \
-|| [ "$FACTORIO_SERVER_VISIBILITY" ] \
-|| [ "$FACTORIO_USER_USERNAME" ] \
-|| [ "$FACTORIO_USER_PASSWORD" ] \
-|| [ "$FACTORIO_SERVER_GAME_PASSWORD" ] \
-|| [ "$FACTORIO_SERVER_VERIFY_IDENTITY" ]
+|| [ "$FACTORIO_MAX_PLAYERS" ] \
+|| [ "$FACTORIO_VISIBILITY" ] \
+|| [ "$FACTORIO_CREDENTIALS_USER" ] \
+|| [ "$FACTORIO_CREDENTIALS_PASS" ] \
+|| [ "$FACTORIO_GAME_PASSWORD" ] \
+|| [ "$FACTORIO_VERIFY_IDENTITY" ]
 then
   echo "###"
   echo "# Server Config:"
   echo "# Server Name = '$FACTORIO_SERVER_NAME'"
   echo "# Server Description = '$FACTORIO_SERVER_DESCRIPTION'"
-  echo "# Server Password = '$FACTORIO_SERVER_GAME_PASSWORD'"
-  echo "# Max Players = '$FACTORIO_SERVER_MAX_PLAYERS'"
-  echo "# Server Visibility = '$FACTORIO_SERVER_VISIBILITY'"
-  echo "# Verify User Identify = '$FACTORIO_SERVER_VERIFY_IDENTITY'"
-  echo "# Factorio Username = '$FACTORIO_USER_USERNAME'"
-  echo "# Factorio Password = '$FACTORIO_USER_PASSWORD'"
+  echo "# Server Password = '$FACTORIO_GAME_PASSWORD'"
+  echo "# Max Players = '$FACTORIO_MAX_PLAYERS'"
+  echo "# Server Visibility = Public: '$FACTORIO_VISIBILITY_PUBLIC' Lan: '$FACTORIO_VISIBILITY_LAN'"
+  echo "# Verify User Identify = '$FACTORIO_REQUIRE_USER_VERIFICATION'"
+  echo "# Factorio Username = '$FACTORIO_CREDENTIALS_USER'"
+  echo "# Factorio Password = '$FACTORIO_CREDENTIALS_PASS'"
 #  echo "# Factorio User Token = '$FACTORIO_USER_TOKEN'"
   echo "###"
 fi
