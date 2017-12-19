@@ -2,7 +2,7 @@ PARENT = $(shell basename ${CURDIR})
 
 .PHONY: build
 build:
-	docker build . -t local_factorio \
+	docker build . -t local_factorio:${VERSION} \
 	--build-arg FACTORIO_SHA1=${SHA} \
 	--build-arg VERSION=${VERSION}
 
