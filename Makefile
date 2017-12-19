@@ -23,4 +23,3 @@ tag:
 .PHONY: publish
 publish:
 	docker push arma26/factorio:${VERSION}
-
