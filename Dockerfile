@@ -11,8 +11,8 @@ VOLUME /opt/factorio/saves /opt/factorio/mods
 EXPOSE 34197/udp
 EXPOSE 27015/tcp
 
-ENV VERSION=0.16.6 \
-    FACTORIO_SHA1=093cd6bce7e92b7d5c1082f9bbe7fffa0082b02d \
+ENV VERSION= \
+    FACTORIO_SHA1= \
     FACTORIO_FILENAME=factorio_headless_x64.tar.xz \
     FACTORIO_SERVER_NAME= \
     FACTORIO_SERVER_DESCRIPTION= \
@@ -41,7 +41,7 @@ CMD ["./new_smart_launch.sh"]
 
 RUN apk --update add bash curl xz && \
     curl -L https://www.factorio.com/get-download/$VERSION/headless/linux64 -o /tmp/factorio_headless_x64.tar.xz && \
-    echo "$FACTORIO_SHA1  /tmp/factorio_headless_x64.tar.xz" | sha1sum -c && \
+    echo "$FACTORIO_SHA1  /tmp/$FACTORIO_FILENAME" | sha1sum -c && \
     xz --decompress /tmp/factorio_headless_x64.tar.xz && \
     tar xvf /tmp/factorio_headless_x64.tar && \
     rm -rf /tmp/factorio_headless_x64.tar && \
