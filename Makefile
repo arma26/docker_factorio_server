@@ -21,8 +21,5 @@ tag:
 
 .PHONY: publish
 publish:
-	docker push arma26/factorio:latest
+	docker push arma26/factorio:${VERSION}
 
-.PHONY: publish-dev
-publish-dev:
-	docker push arma26/factorio:dev
