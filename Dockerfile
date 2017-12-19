@@ -11,8 +11,8 @@ VOLUME /opt/factorio/saves /opt/factorio/mods
 EXPOSE 34197/udp
 EXPOSE 27015/tcp
 
-ENV VERSION=0.16.4 \
-    FACTORIO_SHA1=25c7ab5fc9fb82c686c02d0f6999440624ab4d37 \
+ENV VERSION=0.16.6 \
+    FACTORIO_SHA1=093cd6bce7e92b7d5c1082f9bbe7fffa0082b02d \
     FACTORIO_FILENAME=factorio_headless_x64.tar.xz \
     FACTORIO_SERVER_NAME= \
     FACTORIO_SERVER_DESCRIPTION= \
