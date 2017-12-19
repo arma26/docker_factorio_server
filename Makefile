@@ -15,11 +15,7 @@ download:
 local-server:
 	docker run -d --env FACTORIO_SERVER_NAME=factorio -v ${PWD}/saves:/opt/factorio/saves --env FACTORIO_VISIBILITY_PUBLIC=false -v ${PWD}/mods:/opt/factorio/mods -p 34197:34197/udp local_factorio:latest
 
-.PHONY: tag-latest
-tag-latest:
-	docker tag ${ID} arma26/factorio:latest
-
-.PHONY: tag-dev
+.PHONY: tag
 tag:
 	docker tag ${ID} arma26/factorio:${VERSION}
 
