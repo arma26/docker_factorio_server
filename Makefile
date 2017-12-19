@@ -20,8 +20,8 @@ tag-latest:
 	docker tag ${ID} arma26/factorio:latest
 
 .PHONY: tag-dev
-tag-dev:
-	docker tag ${ID} arma26/factorio:dev
+tag:
+	docker tag ${ID} arma26/factorio:${VERSION}
 
 .PHONY: publish
 publish:
