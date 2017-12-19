@@ -5,7 +5,7 @@ build:
 	docker build . -t local_factorio:${VERSION} \
 	--build-arg FACTORIO_SHA1=${SHA} \
 	--build-arg VERSION=${VERSION} \
-	 --build-arg FACTORIO_FILENAME=factorio_${VERSION}.tar.xz
+	--build-arg FACTORIO_FILENAME=factorio_${VERSION}.tar.xz
 
 .PHONY: download
 download:
