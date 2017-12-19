@@ -9,7 +9,7 @@ build:
 
 .PHONY: download
 download:
-	curl -L https://www.factorio.com/get-download/${VERSION}/headless/linux64 -o ./factorio_${VERSION}.tar.xz
+	curl -sL https://www.factorio.com/get-download/${VERSION}/headless/linux64 -o ./factorio_${VERSION}.tar.xz
 	sha1sum ./factorio_${VERSION}.tar.xz
 
 .PHONY: local-server
