@@ -4,12 +4,13 @@ PARENT = $(shell basename ${CURDIR})
 build:
 	docker build . -t local_factorio:${VERSION} \
 	--build-arg FACTORIO_SHA1=${SHA} \
-	--build-arg VERSION=${VERSION}
+	--build-arg VERSION=${VERSION} \
+	 --build-arg FACTORIO_FILENAME=factorio_${VERSION}.tar.xz
 
 .PHONY: download
 download:
-	curl -L https://www.factorio.com/get-download/${VERSION}/headless/linux64 -o ./factorio_headless_x64.tar.xz
-	sha1sum ./factorio_headless_x64.tar.xz
+	curl -L https://www.factorio.com/get-download/${VERSION}/headless/linux64 -o ./factorio_${VERSION}.tar.xz
+	sha1sum ./factorio_${VERSION}.tar.xz
 
 .PHONY: local-server
 local-server:
