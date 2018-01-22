@@ -1,4 +1,4 @@
-FROM frolvlad/alpine-glibc:alpine-3.3_glibc-2.23
+FROM frolvlad/alpine-glibc:alpine-3.7
 
 MAINTAINER zopanix <zopanix@gmail.com>
 
