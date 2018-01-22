@@ -1,4 +1,4 @@
-FROM frolvlad/alpine-glibc:alpine-3.7
+FROM frolvlad/alpine-glibc:alpine-3.3_glibc-2.23
 
 MAINTAINER zopanix <zopanix@gmail.com>
 
@@ -40,7 +40,7 @@ ENV FACTORIO_SERVER_NAME= \
 
 CMD ["./new_smart_launch.sh"]
 
-RUN apk --update add bash curl openssl xz \
+RUN apk --update add bash libc6-compat openssl ca-certificates curl xz \
     && curl -sL https://www.factorio.com/get-download/$VERSION/headless/linux64 -o /tmp/$FACTORIO_FILENAME \
     && echo "$FACTORIO_SHA1  /tmp/$FACTORIO_FILENAME" | sha1sum -c \
     && xz --decompress /tmp/$FACTORIO_FILENAME \
